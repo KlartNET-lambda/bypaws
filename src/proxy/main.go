@@ -20,7 +20,7 @@ func testProxyConnection(proxyURL *url.URL) bool {
 		Timeout: 5 * time.Second,
 	}
 
-	req, err := http.NewRequest("HEAD", "https://www.google.com/", nil)
+	req, err := http.NewRequest("HEAD", "https://e621.net/", nil)
 	if err != nil {
 		return false
 	}

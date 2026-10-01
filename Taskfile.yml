@@ -1,0 +1,39 @@
+version: '3'
+
+vars:
+    PROJECT_NAME: 'bypaws'
+    FLAGS: '-gcflags=all="-B" -ldflags="-s -w" -trimpath'
+
+tasks:
+    tidy:
+        desc: Clean Go dependencies
+        cmds:
+            - go mod tidy
+
+    clean:
+        desc: Clean dist directory
+        deps: [tidy]
+        cmds:
+            - rm -rf bin/
+
+    build:
+        desc: Build multi-platform
+        deps:
+            - task: clean
+            - task: compile
+              vars: {
+                GOOS: 'windows',
+                GOARCH: 'amd64',
+                EXT: '.exe'
+              }
+            - task: compile
+              vars: {
+                GOOS: 'linux',
+                GOARCH: 'amd64',
+                EXT: '',
+              }
+
+    compile:
+        internal: true
+        cmds:
+            - go build {{.FLAGS}} -o="bin/{{.PROJECT_NAME}}-{{.GOOS}}-amd64{{.EXT}}" ./src

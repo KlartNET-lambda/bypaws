@@ -6,10 +6,14 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
+	"time"
 )
+
 import (
 	"bypaws/src/proxy"
 )
+
+
 
 const targetSite = "https://e621.net/"
 var whitelist = []string{
@@ -34,6 +38,9 @@ func Run() {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	proxy.Transport = &http.Transport{
 		Proxy: http.ProxyURL(proxyURL),
+		MaxIdleConns: 5,
+		MaxIdleConnsPerHost: 5,
+		IdleConnTimeout: 90 * time.Second,
 	}
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {

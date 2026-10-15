@@ -6,34 +6,33 @@ vars:
 
 tasks:
     tidy:
-        desc: Clean Go dependencies
+        desc: Clean dependencies
         cmds:
             - go mod tidy
 
     clean:
-        desc: Clean dist directory
+        desc: Clean output directory
         deps: [tidy]
         cmds:
             - rm -rf bin/
 
     build:
         desc: Build multi-platform
-        deps:
-            - task: clean
-            - task: compile
-              vars: {
-                GOOS: 'windows',
-                GOARCH: 'amd64',
-                EXT: '.exe'
-              }
-            - task: compile
-              vars: {
-                GOOS: 'linux',
-                GOARCH: 'amd64',
-                EXT: '',
-              }
-
-    compile:
-        internal: true
+        deps: [clean]
         cmds:
-            - go build {{.FLAGS}} -o="bin/{{.PROJECT_NAME}}-{{.GOOS}}-amd64{{.EXT}}" ./src
+            - for:
+                - { GOOS: 'windows', GOARCH: 'amd64', EXT: '.exe' }
+                - { GOOS: 'linux', GOARCH: 'amd64', EXT: '' }
+              vars:
+                GOOS: "{{.ITEM.GOOS}}"
+                GOARCH: "{{.ITEM.GOARCH}}"
+                EXT: "{{.ITEM.EXT}}"
+              task: build-target
+
+    build-target:
+        internal: true
+        env:
+            GOOS: "{{.GOOS}}"
+            GOARCH: "{{.GOARCH}}"
+        cmds:
+            - go build {{.FLAGS}} -o "./bin/{{.PROJECT_NAME}}-{{.GOOS}}-{{.GOARCH}}{{.EXT}}" ./src

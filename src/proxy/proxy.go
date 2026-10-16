@@ -10,20 +10,20 @@ import (
 	"time"
 )
 
-const proxyListURL = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/countries/JP/data.txt"
+const proxyListAddr = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/countries/JP/data.txt"
 
-func testProxyConnection(proxyURL *url.URL) bool {
+func testProxyConn(proxyURL *url.URL, targetURL *url.URL) bool {
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
 			MaxIdleConns: 5,
 			MaxIdleConnsPerHost: 5,
-			IdleConnTimeout: 30 * time.Second,
+			IdleConnTimeout: 15 * time.Second,
 		},
 		Timeout: 5 * time.Second,
 	}
 
-	req, err := http.NewRequest("HEAD", "https://e621.net/", nil)
+	req, err := http.NewRequest("HEAD", targetURL.String(), nil)
 	if err != nil {
 		return false
 	}
@@ -37,28 +37,28 @@ func testProxyConnection(proxyURL *url.URL) bool {
 	return res.StatusCode > 0
 }
 
-func GetSingleProxy() (*url.URL, error) {
-	response, err := http.Get(proxyListURL)
+func GetSingleProxyURL(targetURL *url.URL) (*url.URL, error) {
+	response, err := http.Get(proxyListAddr)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
 
-	scanner := bufio.NewScanner(response.Body)
 	log.Println("========== 프록시 유효성 검증 시작 ==========")
-	for scanner.Scan() {
-		rawURL := strings.TrimSpace(scanner.Text())
 
-		parsedURL, err := url.Parse(rawURL)
+	scanner := bufio.NewScanner(response.Body)
+	for scanner.Scan() {
+		proxyURL, err := url.Parse(strings.TrimSpace(scanner.Text()))
 		if err != nil {
 			continue
 		}
 
-		log.Printf("검증 중... (%s)", parsedURL.String())
-		if testProxyConnection(parsedURL) {
+		log.Printf("검증 중... (%s)", proxyURL.String())
+		if testProxyConn(proxyURL, targetURL) {
 			log.Println("검증 성공")
 			log.Println("========== 프록시 유효성 검증 종료 ==========")
-			return parsedURL, nil
+
+			return proxyURL, nil
 		}
 	}
 
@@ -66,5 +66,5 @@ func GetSingleProxy() (*url.URL, error) {
 		return nil, err
 	}
 
-	return nil, fmt.Errorf("사용 가능한 SOCKS5 프록시가 목록에 없음")
+	return nil, fmt.Errorf("사용 가능한 SOCKS5 프록시 없음")
 }

@@ -5,11 +5,16 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"net/url"
 )
 
 
 
+const targetAddr = "https://e621.net/"
+
 func main() {
+	targetURL, _ := url.Parse(targetAddr)
+
 	go func() {
 		log.Println("[pprof] 메모리 분석 서버 실행 중...")
 		err := http.ListenAndServe(":6060", nil)
@@ -18,5 +23,5 @@ func main() {
 		}
 	}()
 
-	web.Run()
+	web.Run(targetURL)
 }

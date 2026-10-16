@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bypaws/src/proxy"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -9,13 +10,6 @@ import (
 	"time"
 )
 
-import (
-	"bypaws/src/proxy"
-)
-
-
-
-const targetSite = "https://e621.net/"
 var whitelist = []string{
 	"/favicon.ico",
 	"/vite/assets/",
@@ -27,10 +21,8 @@ var whitelist = []string{
 	"/popular",
 }
 
-func Run() {
-	targetURL, _ := url.Parse(targetSite)
-
-	proxyURL, err := proxy.GetSingleProxy()
+func Run(targetURL *url.URL) {
+	proxyURL, err := proxy.GetSingleProxyURL(targetURL)
 	if err != nil {
 		log.Fatalf("프록시 로드 실패: %v", err)
 	}
@@ -40,7 +32,7 @@ func Run() {
 		Proxy: http.ProxyURL(proxyURL),
 		MaxIdleConns: 5,
 		MaxIdleConnsPerHost: 5,
-		IdleConnTimeout: 90 * time.Second,
+		IdleConnTimeout: 60 * time.Second,
 	}
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {

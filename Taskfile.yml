@@ -1,7 +1,7 @@
-version: '3'
+version: "3"
 
 vars:
-    PROJECT_NAME: 'bypaws'
+    PROJECT_NAME: "bypaws"
     FLAGS: '-gcflags=all="-B" -ldflags="-s -w" -trimpath'
 
 tasks:
@@ -21,8 +21,8 @@ tasks:
         deps: [clean]
         cmds:
             - for:
-                - { GOOS: 'windows', GOARCH: 'amd64', EXT: '.exe' }
-                - { GOOS: 'linux', GOARCH: 'amd64', EXT: '' }
+                - { GOOS: "windows", GOARCH: "amd64", EXT: ".exe" }
+                - { GOOS: "linux", GOARCH: "amd64", EXT: "" }
               vars:
                 GOOS: "{{.ITEM.GOOS}}"
                 GOARCH: "{{.ITEM.GOARCH}}"

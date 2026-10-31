@@ -8,8 +8,6 @@ import (
 	"net/url"
 )
 
-
-
 const targetAddr = "https://e621.net/"
 
 func main() {
